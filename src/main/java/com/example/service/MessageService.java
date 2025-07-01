@@ -4,13 +4,16 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.example.entity.Account;
 import com.example.entity.Message;
+import com.example.repository.AccountRepository;
 import com.example.repository.MessageRepository;
 
 @Service
 public class MessageService {
 
     MessageRepository messageRepository;
+    AccountRepository accountRepository;
 
     public Message addMessage(Message message) {
         return messageRepository.save(message);
@@ -35,7 +38,7 @@ public class MessageService {
     }
 
     public List<Message> getMessagesByUser(String username) {
-        return messageRepository.findByUsername(username);
+        Account account = accountRepository.findByUsername(username);
+        return messageRepository.findByMessageId(account.getAccountId());
     }
-
 }
