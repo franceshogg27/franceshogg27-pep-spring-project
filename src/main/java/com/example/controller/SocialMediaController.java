@@ -40,21 +40,40 @@ public class SocialMediaController {
     @Autowired
     MessageRepository messageRepository;
 
+    /* As a user, I should be able to create a new Account on the endpoint POST localhost:8080/register. The body will 
+    contain a representation of a JSON Account, but will not contain an accountId.
+
+- The registration will be successful if and only if the username is not blank, the password is at least 4 characters long, 
+and an Account with that username does not already exist. If all these conditions are met, the response body should contain a 
+JSON of the Account, including its accountId. The response status should be 200 OK, which is the default. The new account 
+should be persisted to the database.
+- If the registration is not successful due to a duplicate username, the response status should be 409. (Conflict)
+- If the registration is not successful for some other reason, the response status should be 400. (Client error) */
+
     @PostMapping("/register")
     public ResponseEntity<Account> register(@RequestBody Account account){
-        if (accountRepository.findByUsername(account.getUsername()) != null) {
-            return ResponseEntity.status(400).body(account);
-        }
-        if (account.getUsername() == null || account.getPassword().length() < 4) {
+        Account dupChecker = accountRepository.findByUsername(account.getUsername());
+        if (dupChecker != null) {
             return ResponseEntity.status(409).body(account);
+        }
+        if (account.getUsername() == null || account.getUsername().length() == 0 || account.getPassword().length() < 4) {
+            return ResponseEntity.status(400).body(account);
         }
         return ResponseEntity.ok(accountService.createAccount(account));
     }
 
+    /* As a user, I should be able to verify my login on the endpoint POST localhost:8080/login. The request body will 
+    contain a JSON representation of an Account.
+
+- The login will be successful if and only if the username and password provided in the request body JSON match a real 
+account existing on the database. If successful, the response body should contain a JSON of the account in the response 
+body, including its accountId. The response status should be 200 OK, which is the default.
+- If the login is not successful, the response status should be 401. (Unauthorized) */
+
     @PostMapping("/login")
     public ResponseEntity<Account> login(@RequestBody Account account){
         Account savedAccount = accountRepository.findByUsername(account.getUsername());
-        if (savedAccount.getUsername() == null || savedAccount.getUsername() != account.getPassword()) {
+        if (savedAccount == null || !savedAccount.getPassword().equals(account.getPassword())) {
             return ResponseEntity.status(401).body(account);
         }
         return ResponseEntity.ok(accountService.login(account.getUsername(), account.getPassword()));
@@ -76,6 +95,9 @@ public class SocialMediaController {
 
     @GetMapping("/messages/{messageId}")
     public ResponseEntity<Message> getMessageById(@PathVariable Integer messageId){
+        if (messageId == null || !messageRepository.existsById(messageId)) {
+            return ResponseEntity.ok().build();
+        }
         return ResponseEntity.ok(messageService.getMessageById(messageId));
     }
 
@@ -89,12 +111,12 @@ public class SocialMediaController {
     }
 
     @PatchMapping("/messages/{messageId}")
-    public ResponseEntity<Integer> updateMessage(@PathVariable Integer id, @RequestBody Message message){
+    public ResponseEntity<Integer> updateMessage(@PathVariable Integer messageId, @RequestBody Message message){
         String text = message.getMessageText();
-        if (messageRepository.findById(id) == null || text != null && text.length() > 0 && text.length() <= 255) {
+        if (!messageRepository.existsById(messageId) || text == null || text.length() == 0 || text.length() > 255) {
             return ResponseEntity.status(400).body(0);
         }
-        messageService.updateMessage(id, message);
+        messageService.updateMessage(messageId, message);
         return ResponseEntity.ok(1);
     }
 

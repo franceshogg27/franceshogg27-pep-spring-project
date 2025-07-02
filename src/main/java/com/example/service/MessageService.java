@@ -28,10 +28,7 @@ public class MessageService {
     }
 
     public Message getMessageById(Integer id) {
-        if (messageRepository.getById(id) == null) {
-            return null;
-        }
-        return messageRepository.getById(id);
+        return messageRepository.findById(id).orElse(null);
     }
 
     public void deleteMessageById(Integer id) {
