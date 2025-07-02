@@ -1,11 +1,9 @@
 package com.example.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -40,16 +38,6 @@ public class SocialMediaController {
     @Autowired
     MessageRepository messageRepository;
 
-    /* As a user, I should be able to create a new Account on the endpoint POST localhost:8080/register. The body will 
-    contain a representation of a JSON Account, but will not contain an accountId.
-
-- The registration will be successful if and only if the username is not blank, the password is at least 4 characters long, 
-and an Account with that username does not already exist. If all these conditions are met, the response body should contain a 
-JSON of the Account, including its accountId. The response status should be 200 OK, which is the default. The new account 
-should be persisted to the database.
-- If the registration is not successful due to a duplicate username, the response status should be 409. (Conflict)
-- If the registration is not successful for some other reason, the response status should be 400. (Client error) */
-
     @PostMapping("/register")
     public ResponseEntity<Account> register(@RequestBody Account account){
         Account dupChecker = accountRepository.findByUsername(account.getUsername());
@@ -61,14 +49,6 @@ should be persisted to the database.
         }
         return ResponseEntity.ok(accountService.createAccount(account));
     }
-
-    /* As a user, I should be able to verify my login on the endpoint POST localhost:8080/login. The request body will 
-    contain a JSON representation of an Account.
-
-- The login will be successful if and only if the username and password provided in the request body JSON match a real 
-account existing on the database. If successful, the response body should contain a JSON of the account in the response 
-body, including its accountId. The response status should be 200 OK, which is the default.
-- If the login is not successful, the response status should be 401. (Unauthorized) */
 
     @PostMapping("/login")
     public ResponseEntity<Account> login(@RequestBody Account account){
